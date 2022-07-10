@@ -11,6 +11,7 @@ class MailBase:
 		self._insert_code = None
 		self._text_part = ''
 		self._html_part = None
+		self._attachments = []
 
 	def subject(self, value):
 		self._subject = value
@@ -46,3 +47,6 @@ class MailBase:
 
 	def html_part(self, value):
 		self._html_part = value
+
+	def attachments(self, file_path):
+		self._attachments.append(file_path)
