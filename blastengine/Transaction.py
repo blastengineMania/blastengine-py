@@ -36,15 +36,6 @@ class Transaction(MailBase):
 		response = requests.post(Transaction.post_url, data=json.dumps(entity), headers=headers)
 		return self.handle_response(response)
 
-	def handle_response(self, response):
-		json_body = json.loads(response.content)
-		if response.status_code > 300:
-			messages = []
-			for key in json_body['error_messages']:
-				messages.append(f"{key}: {', '.join(json_body['error_messages'][key])}")
-			raise Exception("\n".join(messages))
-		return json_body['delivery_id']
-
 	def send_attachments_mail(self):
 		entity = self.generate_params()
 		headers = {
