@@ -29,6 +29,7 @@ class MailBase:
 		self.reservation_time = None
 		self.created_time = None
 		self.updated_time = None		
+		self.job_id = None
 
 	def subject(self, value):
 		self._subject = value
@@ -68,13 +69,22 @@ class MailBase:
 	def attachments(self, file_path):
 		self._attachments.append(file_path)
 
-	def handle_response(self, response):
+	def handle_error(self, response):
 		json_body = json.loads(response.content)
 		if response.status_code > 300:
 			messages = []
 			for key in json_body['error_messages']:
 				messages.append(f"{key}: {', '.join(json_body['error_messages'][key])}")
 			raise Exception("\n".join(messages))
+		return json_body
+	
+	def handle_job_response(self, response):
+		json_body = self.handle_error(response)
+		self.job_id = json_body['job_id']
+		return self.job_id
+
+	def handle_response(self, response):
+		json_body = self.handle_error(response)
 		self.delivery_id = json_body['delivery_id']
 		return self.delivery_id
 

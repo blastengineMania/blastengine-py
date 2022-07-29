@@ -1,4 +1,5 @@
 from blastengine.MailBase import MailBase
+from blastengine.Job import Job
 from datetime import datetime, timedelta
 from pathlib import Path
 import requests
@@ -11,6 +12,8 @@ class Bulk(MailBase):
 	commit_url = 'https://app.engn.jp/api/v1/deliveries/bulk/commit'
 
 	def to(self, email, insert_codes = []):
+		if len(self._to) == 50:
+			raise Exception('Over limitation error. You can add up to 50 email addresses at a time.')
 		code = []
 		for insert_code in insert_codes:
 			key = list(insert_code.keys())[0]
@@ -47,6 +50,11 @@ class Bulk(MailBase):
 			entity['html_part'] = self._html_part
 		return entity
 
+	def csv_import(self, file_path, ignore_errors = False):
+		job = Job(self.delivery_id, file_path, ignore_errors)
+		job.import_file()
+		return job
+	
 	def update(self):
 		entity = self.generate_params()
 		headers = {
@@ -54,15 +62,26 @@ class Bulk(MailBase):
 			'content-type': 'application/json'
 		}
 		response = requests.put(f'{Bulk.update_url}/{self.delivery_id}', data=json.dumps(entity), headers=headers)
-		return self.handle_response(response)
+		res = self.handle_response(response)
+		# Reset
+		self._to = []
+		return res
 
 	def send(self, reservation_time = None):
+		if reservation_time is None:
+			return self.send_immediate()
+		else:
+			return self.send_schedule(reservation_time)
+	
+	def send_immediate(self):
 		headers = {
 			'Authorization': f'Bearer {self.client.token}',
 			'content-type': 'application/json'
 		}
-		if reservation_time is None:
-			reservation_time = datetime.today() + timedelta(minutes=1)
+		response = requests.patch(f'{Bulk.commit_url}/{self.delivery_id}/immediate', headers=headers)
+		return self.handle_response(response)
+	
+	def send_schedule(self, reservation_time):
 		entity = {
 			'reservation_time': reservation_time.astimezone().replace(microsecond=0).isoformat()
 		}
