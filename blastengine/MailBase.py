@@ -35,7 +35,7 @@ class MailBase:
 		self._subject = value
 	
 	def to(self, email):
-		self._to.append(email)
+		self._to = email
 	
 	def cc(self, email):
 		self._cc.append(email)

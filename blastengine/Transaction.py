@@ -19,7 +19,7 @@ class Transaction(MailBase):
 			'from': {
 				'email': self._from['email']
 			},
-			'to': ",".join(self._to)
+			'to': self._to
 		}
 		if 'name' in self._from:
 			entity['from']['name'] = self._from['name']
