@@ -25,9 +25,12 @@ class Job(MailBase):
 		}
 		files = []
 		file = Path(self.file_path)
-		files.append(('file', (file.name, open(file.resolve(), 'rb'), 'text/csv')))
+		f = open(file.resolve(), 'rb')
+		files.append(('file', (file.name, f, 'text/csv')))
 		files.append(('data', ('data.json', json.dumps(entity), 'application/json')))
 		response = requests.post(self.import_url, files=files, headers=headers)
+		# close
+		f.close()
 		return self.handle_job_response(response)
 
 	def finished(self):

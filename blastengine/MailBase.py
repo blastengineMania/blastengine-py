@@ -1,9 +1,11 @@
 import json
+from datetime import datetime, timezone, timedelta
 import requests
 
 class MailBase:
 	clinet = None
 	base_url = 'https://app.engn.jp/api/v1/deliveries'
+	endpoint_url = 'https://app.engn.jp/api/v1'
 
 	def __init__(self):
 		self.delivery_id = None
@@ -31,7 +33,33 @@ class MailBase:
 		self.updated_time = None		
 		self.job_id = None
 
-	def subject(self, value):
+	def sets(self, params):
+		for key in params:
+			self.set(key, params[key])
+		return self
+	def set(self, key, value):
+		if value is None:
+			return self
+		if key == "updated_time" or key == "created_time" or key == "reservation_time" or key == "delivery_time":
+			setattr(self, key, datetime.fromisoformat(value))
+		elif key == "delivery_id":
+			self.delivery_id = value
+		elif key == "subject":
+			self._subject = value
+		elif key == "delivery_type":
+			self.delivery_type = value
+		elif key == "status":
+			self.status = value
+		elif key == "from":
+			self._from = {
+				'email': value['email'],
+				'name': value['name']
+			}
+		return self
+
+	def subject(self, value = None):
+		if value is None:
+			return self._subject
 		self._subject = value
 	
 	def to(self, email):
@@ -43,13 +71,15 @@ class MailBase:
 	def bcc(self, email):
 		self._bcc.append(email)
 	
-	def fromAddress(self, email, name = ''):
+	def from_address(self, email = None, name = ''):
+		if email is None:
+			return self._from
 		self._from = {
 			'email': email,
 			'name': name
 		}
 	
-	def insert_code(key, value):
+	def insert_code(self, key, value):
 		if self._insert_code == None:
 			self._insert_code = []
 		self._insert_code.append({
@@ -69,6 +99,7 @@ class MailBase:
 	def attachments(self, file_path):
 		self._attachments.append(file_path)
 
+	@classmethod
 	def handle_error(self, response):
 		json_body = json.loads(response.content)
 		if response.status_code > 300:
@@ -78,16 +109,21 @@ class MailBase:
 			raise Exception("\n".join(messages))
 		return json_body
 	
+	@classmethod
+	def handle_array_response(self, response):
+		json_body = MailBase.handle_error(response)
+		return json_body['data']
+	
 	def handle_job_response(self, response):
-		json_body = self.handle_error(response)
+		json_body = MailBase.handle_error(response)
 		self.job_id = json_body['job_id']
 		return self.job_id
 
 	def handle_response(self, response):
-		json_body = self.handle_error(response)
+		json_body = MailBase.handle_error(response)
 		self.delivery_id = json_body['delivery_id']
 		return self.delivery_id
-
+	
 	def delete(self):
 		headers = {
 			'Authorization': f'Bearer {self.client.token}',

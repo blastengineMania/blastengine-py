@@ -23,8 +23,8 @@ Blastengine('USER_NAME', 'API_KEY')
 transaction = Transaction()
 transaction.subject('test mail')
 transaction.text_part('mail body')
-transaction.fromAddress('info@opendata.jp')
-transaction.to('atsushi@moongift.jp')
+transaction.from_address('info@blastengine.jp')
+transaction.to('user@example.jp')
 ```
 
 #### 送信
@@ -40,7 +40,3 @@ except Exception as e:
 ## License
 
 MIT License
-
-
-
-print(res)

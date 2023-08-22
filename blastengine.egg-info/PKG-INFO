@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: blastengine
+Version: 0.0.6
+Summary: blastengine is SDK for blastengine
+Home-page: https://blastengine.jp/
+Author: goofmint
+Author-email: atsushi@moongift.jp
+Classifier: Programming Language :: Python :: 3.8
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+blastengine is SDK for blastengine. It supports text and html email with attachments.

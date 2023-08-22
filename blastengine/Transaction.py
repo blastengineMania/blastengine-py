@@ -23,6 +23,8 @@ class Transaction(MailBase):
 		}
 		if 'name' in self._from:
 			entity['from']['name'] = self._from['name']
+		if len(self._insert_code) > 0:
+			entity['insert_code'] = self._insert_code
 		if self._html_part is not None:
 			entity['html_part'] = self._html_part
 		return entity
@@ -42,9 +44,14 @@ class Transaction(MailBase):
 			'Authorization': f'Bearer {self.client.token}'
 		}
 		files = []
+		fs = []
 		for file_path in self._attachments:
 			file = Path(file_path)
-			files.append(('file', (file.name, open(file.resolve(), 'rb'), mimetypes.guess_type(file.resolve()))))
+			f = open(file.resolve(), 'rb')
+			files.append(('file', (file.name, f, mimetypes.guess_type(file.resolve()))))
+			fs.append(f)
 		files.append(('data', ('data.json', json.dumps(entity), 'application/json')))
 		response = requests.post(Transaction.post_url, files=files, headers=headers)
+		for f in fs:
+			f.close()
 		return self.handle_response(response)

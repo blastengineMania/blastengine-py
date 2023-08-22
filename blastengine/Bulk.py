@@ -5,21 +5,21 @@ from pathlib import Path
 import requests
 import json
 import mimetypes
+import tempfile
+import csv
+import time
 
 class Bulk(MailBase):
 	begin_url = 'https://app.engn.jp/api/v1/deliveries/bulk/begin'
 	update_url = 'https://app.engn.jp/api/v1/deliveries/bulk/update'
 	commit_url = 'https://app.engn.jp/api/v1/deliveries/bulk/commit'
 
-	def to(self, email, insert_codes = []):
-		if len(self._to) == 50:
-			raise Exception('Over limitation error. You can add up to 50 email addresses at a time.')
+	def to(self, email, insert_codes = {}):
 		code = []
-		for insert_code in insert_codes:
-			key = list(insert_code.keys())[0]
-			value = list(insert_code.values())[0]
+		for key in insert_codes:
+			value = insert_codes[key]
 			code.append({
-				'key': key,
+				'key': f'__{key}__',
 				'value': value
 			})
 		self._to.append({
@@ -42,7 +42,7 @@ class Bulk(MailBase):
 		}
 		if self.delivery_id is None:
 			entity['encode'] = self._encode
-		if self.delivery_id is not None and len(self._to) > 0:
+		if self.delivery_id is not None and len(self._to) > 0 and len(self._to) < 50:
 			entity['to'] = self._to
 		if 'name' in self._from:
 			entity['from']['name'] = self._from['name']
@@ -55,7 +55,32 @@ class Bulk(MailBase):
 		job.import_file()
 		return job
 	
+	def begin_csv(self):
+		data = []
+		for params in self._to:
+			row = {}
+			row['email'] = params['email']
+			if params['insert_code'] is not None:
+				for insert_code in params['insert_code']:
+					row[insert_code['key']] = insert_code['value']
+			data.append(row)
+		with tempfile.NamedTemporaryFile('w', delete=False, newline='', suffix=".csv") as tmp_file:
+			# CSVライターオブジェクトを作成
+			writer = csv.DictWriter(tmp_file, fieldnames=data[0].keys(), quotechar = '"', quoting=csv.QUOTE_ALL)
+			# ヘッダーを書き込む
+			writer.writeheader()
+			# dictオブジェクトを行として書き込む
+			for row in data:
+					writer.writerow(row)
+		# close file
+		tmp_file.close()
+		job = self.csv_import(tmp_file.name)
+		while job.finished() == False:
+			time.sleep(5)
+
 	def update(self):
+		if len(self._to) > 50:
+			return self.begin_csv()
 		entity = self.generate_params()
 		headers = {
 			'Authorization': f'Bearer {self.client.token}',
