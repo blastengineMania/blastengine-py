@@ -16,5 +16,20 @@ class TestMail(unittest.TestCase):
 		print(ary[0])
 		print(ary[0].id)
 		print(ary[0].delivery_type)
+
+	def test_fetch2(self):
+		load_dotenv(verbose=True)
+		Blastengine(os.environ.get("USER_ID"), os.environ.get("API_KEY"))
+		ary = Log.fetch({
+			'status': ['EDIT', 'SOFTERROR'],
+			'count': 2,
+			'anchor': 4582,
+		})
+		print(ary[0].id)
+		print(ary[0].last_response_code)
+		print(ary[0].status)
+		print(ary[1].id)
+		print(ary[1].last_response_code)
+		print(ary[1].status)
 if __name__ == '__main__':
   unittest.main()

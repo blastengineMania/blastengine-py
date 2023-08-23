@@ -15,7 +15,7 @@ class Log(MailBase):
 		self.last_response_message = None
 
 	@classmethod
-	def fetch(cls, params = {}):
+	def find(cls, params = {}):
 		headers = {
 			'Authorization': f'Bearer {cls.client.token}',
 			'content-type': 'application/json'
