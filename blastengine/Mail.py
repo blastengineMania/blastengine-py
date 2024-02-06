@@ -8,13 +8,13 @@ from urllib.parse import urlencode
 
 class Mail(MailBase):
 	@classmethod
-	def find(cls, params = {}):
+	def _find(cls, path, params = {}):
 		headers = {
 			'Authorization': f'Bearer {cls.client.token}',
 			'content-type': 'application/json'
 		}
 		querystring = urlencode(params)
-		response = requests.get(f'{cls.endpoint_url}/deliveries?{querystring}', headers=headers)
+		response = requests.get(f'{cls.endpoint_url}{path}?{querystring}', headers=headers)
 		json_body = cls.handle_array_response(response)
 		res = []
 		for params in json_body:
@@ -22,6 +22,13 @@ class Mail(MailBase):
 			mail.sets(params)
 			res.append(mail)
 		return res
+	@classmethod
+	def find(cls, params = {}):
+		return cls._find('/deliveries', params)
+	@classmethod
+	def all(cls, params = {}):
+		return cls._find('/deliveries/all', params)
+	
 	def to(self, email, insert_codes = {}):
 		code = []
 		for key in insert_codes:
@@ -82,6 +89,17 @@ class Mail(MailBase):
 		base.text_part(self._text_part)
 		if self._html_part is not None:
 			base.html_part(self._html_part)
+		if self._unsubscribe is not None:
+			unsubscribe = {}
+			if 'url' in self._unsubscribe:
+				unsubscribe['url'] = self._unsubscribe['url']
+			else:
+				unsubscribe['url'] = None
+			if 'email' in self._unsubscribe:
+				unsubscribe['email'] = self._unsubscribe['email']
+			else:
+				unsubscribe['email'] = None
+			base.unsubscribe(url=unsubscribe['url'], email=unsubscribe['email'])
 		if self._encode is not None:
 			base.encode(self._encode)
 		if len(self._attachments) > 0:

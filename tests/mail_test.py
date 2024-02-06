@@ -9,12 +9,58 @@ from os.path import join, dirname
 from dotenv import load_dotenv
 
 class TestMail(unittest.TestCase):
-	def test_fetch(self):
+	def test_find(self):
 		load_dotenv(verbose=True)
 		client = Blastengine(os.environ.get("USER_ID"), os.environ.get("API_KEY"))
-		ary = Mail.fetch()
+		ary = Mail.find({
+			"limit": 1,
+			"delivery_type": ["BULK"],
+			"list_unsubscribe_mailto": "moongift"
+		})
 		print(ary[0])
 		print(ary[0].subject())
 		print(ary[0].from_address())
+	def test_all(self):
+		load_dotenv(verbose=True)
+		client = Blastengine(os.environ.get("USER_ID"), os.environ.get("API_KEY"))
+		ary = Mail.find()
+		print(ary[0])
+		print(ary[0].subject())
+		print(ary[0].from_address())
+	def test_send_transaction_mail(self):
+		load_dotenv(verbose=True)
+		client = Blastengine(os.environ.get("USER_ID"), os.environ.get("API_KEY"))
+		mail = Mail()
+		mail.subject('メールの件名')
+		mail.text_part('テキスト本文 __name__')
+		mail.from_address(os.environ.get("FROM_EMAIL"), os.environ.get("FROM_NAME"))
+		mail.to('atsushi+1@moongift.co.jp', {'name': 'name 1', 'hash': 'aaaaa'})
+		mail.to('atsushi+2@moongift.co.jp', {'name': 'name 2', 'hash': 'bbbbb'})
+		mail.unsubscribe(url='https://example.com/unsubscribe/__hash__', email='unsubscrie+__hash__@example.com')
+		delivery_id = mail.send()
+		print(delivery_id)
+	def test_send_transaction_mail_only_url(self):
+		load_dotenv(verbose=True)
+		client = Blastengine(os.environ.get("USER_ID"), os.environ.get("API_KEY"))
+		mail = Mail()
+		mail.subject('メールの件名 unsubscribe only url')
+		mail.text_part('テキスト本文 __name__')
+		mail.from_address(os.environ.get("FROM_EMAIL"), os.environ.get("FROM_NAME"))
+		mail.to('atsushi+1@moongift.co.jp', {'name': 'name 1', 'hash': 'aaaaa'})
+		mail.to('atsushi+2@moongift.co.jp', {'name': 'name 2', 'hash': 'bbbbb'})
+		mail.unsubscribe(url='https://example.com/unsubscribe/__hash__')
+		delivery_id = mail.send()
+		print(delivery_id)
+	def test_send_transaction_mail_only_email(self):
+		load_dotenv(verbose=True)
+		client = Blastengine(os.environ.get("USER_ID"), os.environ.get("API_KEY"))
+		mail = Mail()
+		mail.subject('メールの件名 unsubscribe only email')
+		mail.text_part('テキスト本文 __name__')
+		mail.from_address(os.environ.get("FROM_EMAIL"), os.environ.get("FROM_NAME"))
+		mail.to('atsushi+1@moongift.co.jp', {'name': 'name 1', 'hash': 'aaaaa'})
+		mail.unsubscribe(email='unsubscrie+__hash__@example.com')
+		delivery_id = mail.send()
+		print(delivery_id)
 if __name__ == '__main__':
   unittest.main()

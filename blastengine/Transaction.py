@@ -27,6 +27,12 @@ class Transaction(MailBase):
 			entity['insert_code'] = self._insert_code
 		if self._html_part is not None:
 			entity['html_part'] = self._html_part
+		if self._unsubscribe is not None:
+			entity['list_unsubscribe'] = {}
+			if 'url' in self._unsubscribe:
+				entity['list_unsubscribe']['url'] = self._unsubscribe['url']
+			if 'email' in self._unsubscribe:
+				entity['list_unsubscribe']['mailto'] = f'mailto:{self._unsubscribe["email"]}'
 		return entity
 
 	def send_text_mail(self):

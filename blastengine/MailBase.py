@@ -18,6 +18,7 @@ class MailBase:
 		self._insert_code = None
 		self._text_part = ''
 		self._html_part = None
+		self._unsubscribe = None
 		self._attachments = []
 		self.delivery_type = None
 		self.status = None
@@ -95,6 +96,14 @@ class MailBase:
 
 	def html_part(self, value):
 		self._html_part = value
+	
+	def unsubscribe(self, *, url=None, email=None):
+		if url is not None or email is not None:
+			self._unsubscribe = {}
+		if url is not None:
+			self._unsubscribe["url"] = url
+		if email is not None:
+			self._unsubscribe["email"] = email
 
 	def attachments(self, file_path):
 		self._attachments.append(file_path)

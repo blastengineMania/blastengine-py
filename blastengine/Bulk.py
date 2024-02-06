@@ -48,6 +48,12 @@ class Bulk(MailBase):
 			entity['from']['name'] = self._from['name']
 		if self._html_part is not None:
 			entity['html_part'] = self._html_part
+		if self._unsubscribe is not None:
+			entity['list_unsubscribe'] = {}
+			if 'url' in self._unsubscribe:
+				entity['list_unsubscribe']['url'] = self._unsubscribe['url']
+			if 'email' in self._unsubscribe:
+				entity['list_unsubscribe']['mailto'] = f'mailto:{self._unsubscribe["email"]}'
 		return entity
 
 	def csv_import(self, file_path, ignore_errors = False):
