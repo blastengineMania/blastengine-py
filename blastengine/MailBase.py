@@ -132,7 +132,15 @@ class MailBase:
 		json_body = MailBase.handle_error(response)
 		self.delivery_id = json_body['delivery_id']
 		return self.delivery_id
-	
+
+	def cancel(self):
+		headers = {
+			'Authorization': f'Bearer {self.client.token}',
+			'content-type': 'application/json'
+		}
+		response = requests.patch(f'{MailBase.base_url}/{self.delivery_id}/cancel', headers=headers)
+		return self.handle_response(response)
+
 	def delete(self):
 		headers = {
 			'Authorization': f'Bearer {self.client.token}',
@@ -150,7 +158,7 @@ class MailBase:
 		self.handle_response(response)
 		json_body = json.loads(response.content)
 		self.delivery_id = json_body['delivery_id']
-		self.fromAddress(json_body['from']['email'], json_body['from']['name'])
+		self.from_address(json_body['from']['email'], json_body['from']['name'])
 		self.delivery_type = json_body['delivery_type']
 		self.status = json_body['status']
 		self.subject(json_body['subject'])

@@ -48,7 +48,7 @@ class Mail(MailBase):
 				raise Exception('You can not specify the date when sending CC or BCC.')
 			if len(self._to) > 1:
 				raise Exception('You can not specify the to when sending CC or BCC.')
-		if date is not None or len(self._to) == 1:
+		if date is None:
 			return self.send_transaction_mail()
 		return self.send_bulk_mail()
 
@@ -67,6 +67,7 @@ class Mail(MailBase):
 			for bcc in self._bcc:
 				transaction.bcc(bcc)
 		transaction.send()
+		self.delivery_id = transaction.delivery_id
 		return transaction.delivery_id
 
 	def send_bulk_mail(self):
@@ -79,6 +80,7 @@ class Mail(MailBase):
 					data[re.sub('__(.*)__', '\\1', insert_code['key'])] = insert_code['value']
 				bulk.to(params['email'], data)
 		bulk.begin()
+		self.delivery_id = bulk.delivery_id
 		bulk.update()
 		bulk.send()
 		return bulk.delivery_id

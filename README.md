@@ -37,6 +37,13 @@ except Exception as e:
 	print(e)
 ```
 
+## テスト
+
+```sh
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
 ## License
 
 MIT License
