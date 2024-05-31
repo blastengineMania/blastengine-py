@@ -23,8 +23,12 @@ class Transaction(MailBase):
 		}
 		if 'name' in self._from:
 			entity['from']['name'] = self._from['name']
-		if len(self._insert_code) > 0:
+		if self._insert_code is not None and len(self._insert_code) > 0:
 			entity['insert_code'] = self._insert_code
+		if len(self._cc) > 0:
+			entity['cc'] = self._cc
+		if len(self._bcc) > 0:
+			entity['bcc'] = self._bcc
 		if self._html_part is not None:
 			entity['html_part'] = self._html_part
 		if self._unsubscribe is not None:

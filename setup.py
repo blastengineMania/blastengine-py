@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name="blastengine",
-    version="0.0.9",
+    version="0.0.11",
     author="goofmint",
     author_email="atsushi@moongift.jp",
     description="blastengine is SDK for blastengine",
